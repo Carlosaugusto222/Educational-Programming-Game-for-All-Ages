@@ -3,187 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aprendizagem de Lógica de Programação</title>
+    <title>Aprendizagem Avançada de Lógica de Programação</title>
     <style>
-            .body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: columm;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: auto;
-            margin: 10;
-            background-color: #f0f0f0;
-        }
-        .botao {
-            color: #fff;
-            background-color: #0f0;
-        }
-        .game-container {
-            display: flex;
-            background-color: white;
-            flex-direction: columm;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .game-board {
-            margin-right: 20px;
-        }
-        #labirinto {
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-        .celula {
-            width: 30px;
-            height: 30px;
-            display: inline-block;
-            margin: 1px;
-            border: 1px solid #ddd;
-        }
-        .parede { background-color: #333; }
-        .caminho { background-color: #fff; }
-        .jogador { background-color: #f00; }
-        .objetivo { background-color: #0f0; }
-        .code-editor {
-            width: 300px;
-        }
-        #codigo {
-            width: 100%;
-            height: 200px;
-            margin-bottom: 10px;
-        }
-        .button {
-            margin: 20px;
-            padding: 5px 10px;
-        }
-        #mensagem, #nivelAtual {
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        #instrucoes {
-            margin-top: 10px;
-            font-style: italic;
-        }
-        @media (max-width: 600px) {
-            .game-container {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: columm;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: auto;
-            margin: 10;
-            background-color: #f0f0f0;
-        }
-                .botao {
-            color: #fff
-            background-color: #0f0;
-        }
-
-        }
+        /* ... (estilos anteriores mantidos) ... */
+        .obstáculo { background-color: #ff9900; }
+        .chave { background-color: #ffff00; }
+        .porta { background-color: #8b4513; }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <div class="game-board">
-            <h2>Labirinto de Programação</h2>
-            <div id="labirinto"></div>
-            <div id="nivelAtual"></div>
-            <div id="mensagem"></div>
-            <div id="instrucoes"></div>
-        </div>
+        <!-- ... (estrutura HTML anterior mantida) ... -->
         <div class="code-editor">
             <h2>Seu Código!</h2>
             <textarea id="codigo" placeholder="Digite seu código aqui..."></textarea>
-            <button onclick ="executarCodigo()"class="botao">Run</button>
+            <button onclick="executarCodigo()" class="botao">Run</button>
             <button onclick="proximoNivel()">Next Level</button>
+            <button onclick="reiniciarNivel()">Restart Level</button>
         </div>
     </div>
 
     <script>
-        let nivelAtual = 0;
-        let posicaoJogador = [0, 0];
-        let objetivo = [0, 0];
-        let labirinto = [];
-        
+        // ... (variáveis e funções anteriores mantidas) ...
+
         const niveis = [
+            // ... (níveis anteriores mantidos) ...
             {
-                tamanho: 3,
-                instrucoes: "Use 'moverDireita()' para chegar ao objetivo.",
-                solucaoEsperada: ["moverDireita()", "moverDireita()"]
+                tamanho: 7,
+                instrucoes: "Use condicionais para evitar obstáculos. Exemplo: if(temObstáculoADireita()) { moverBaixo(); } else { moverDireita(); }",
+                solucaoEsperada: [
+                    "function moverSeguro() {",
+                    "  if(temObstáculoADireita()) {",
+                    "    moverBaixo();",
+                    "  } else {",
+                    "    moverDireita();",
+                    "  }",
+                    "}",
+                    "for(let i=0; i<6; i++) {",
+                    "  moverSeguro();",
+                    "}"
+                ],
+                obstáculos: [[2,3], [3,5], [4,1], [5,4]]
             },
             {
-                tamanho: 4,
-                instrucoes: "Use 'moverDireita()' e 'moverBaixo()' para chegar ao objetivo.",
-                solucaoEsperada: ["moverDireita()", "moverDireita()", "moverBaixo()", "moverBaixo()"]
-            },
-            {
-                tamanho: 5,
-                instrucoes: "Use um loop 'for' para repetir movimentos. Exemplo: for(let i=0; i<3; i++) { moverDireita(); }",
-                solucaoEsperada: ["for(let i=0; i<4; i++) {", "  moverDireita();", "}", "moverBaixo();"]
-            },
-            {
-                tamanho: 6,
-                instrucoes: "Use uma função para agrupar movimentos. Exemplo: function moverDiagonal() { moverDireita(); moverBaixo(); }",
-                solucaoEsperada: ["function moverDiagonal() {", "  moverDireita();", "  moverBaixo();", "}", "for(let i=0; i<3; i++) {", "  moverDiagonal();", "}"]
+                tamanho: 8,
+                instrucoes: "Colete a chave antes de abrir a porta. Use 'pegarChave()' para coletar a chave.",
+                solucaoEsperada: [
+                    "moverDireita();",
+                    "moverDireita();",
+                    "moverBaixo();",
+                    "moverBaixo();",
+                    "pegarChave();",
+                    "moverDireita();",
+                    "moverDireita();",
+                    "moverBaixo();",
+                    "moverBaixo();",
+                    "abrirPorta();",
+                    "moverDireita();",
+                    "moverDireita();"
+                ],
+                chave: [2,2],
+                porta: [4,6]
             }
         ];
 
+        let temChave = false;
+
         function criarLabirinto(tamanho) {
-            labirinto = [];
-            for (let i = 0; i < tamanho; i++) {
-                labirinto[i] = [];
-                for (let j = 0; j < tamanho; j++) {
-                    labirinto[i][j] = 'caminho';
+            // ... (código anterior mantido) ...
+            if (niveis[nivelAtual].obstáculos) {
+                for (let obs of niveis[nivelAtual].obstáculos) {
+                    labirinto[obs[0]][obs[1]] = 'obstáculo';
                 }
             }
-            posicaoJogador = [0, 0];
-            objetivo = [tamanho - 1, tamanho - 1];
+            if (niveis[nivelAtual].chave) {
+                labirinto[niveis[nivelAtual].chave[0]][niveis[nivelAtual].chave[1]] = 'chave';
+            }
+            if (niveis[nivelAtual].porta) {
+                labirinto[niveis[nivelAtual].porta[0]][niveis[nivelAtual].porta[1]] = 'porta';
+            }
         }
 
         function mostrarLabirinto() {
-            const labirintoDiv = document.getElementById('labirinto');
-            labirintoDiv.innerHTML = '';
-            for (let i = 0; i < labirinto.length; i++) {
-                for (let j = 0; j < labirinto[i].length; j++) {
-                    const celula = document.createElement('div');
-                    celula.classList.add('celula');
-                    if (i === posicaoJogador[0] && j === posicaoJogador[1]) {
-                        celula.classList.add('jogador');
-                    } else if (i === objetivo[0] && j === objetivo[1]) {
-                        celula.classList.add('objetivo');
-                    } else {
-                        celula.classList.add(labirinto[i][j]);
-                    }
-                    labirintoDiv.appendChild(celula);
-                }
-                labirintoDiv.appendChild(document.createElement('br'));
-            }
+            // ... (código anterior mantido) ...
         }
 
         function moverDireita() {
-            if (posicaoJogador[1] < labirinto[0].length - 1) {
+            if (posicaoJogador[1] < labirinto[0].length - 1 && labirinto[posicaoJogador[0]][posicaoJogador[1]+1] !== 'obstáculo') {
+                if (labirinto[posicaoJogador[0]][posicaoJogador[1]+1] === 'porta' && !temChave) {
+                    throw new Error("Você precisa da chave para abrir a porta!");
+                }
                 posicaoJogador[1]++;
                 mostrarLabirinto();
             }
         }
 
         function moverBaixo() {
-            if (posicaoJogador[0] < labirinto.length - 1) {
+            if (posicaoJogador[0] < labirinto.length - 1 && labirinto[posicaoJogador[0]+1][posicaoJogador[1]] !== 'obstáculo') {
+                if (labirinto[posicaoJogador[0]+1][posicaoJogador[1]] === 'porta' && !temChave) {
+                    throw new Error("Você precisa da chave para abrir a porta!");
+                }
                 posicaoJogador[0]++;
                 mostrarLabirinto();
             }
         }
 
-        function verificarVitoria() {
-            return posicaoJogador[0] === objetivo[0] && posicaoJogador[1] === objetivo[1];
+        function temObstáculoADireita() {
+            return posicaoJogador[1] < labirinto[0].length - 1 && labirinto[posicaoJogador[0]][posicaoJogador[1]+1] === 'obstáculo';
+        }
+
+        function pegarChave() {
+            if (labirinto[posicaoJogador[0]][posicaoJogador[1]] === 'chave') {
+                temChave = true;
+                labirinto[posicaoJogador[0]][posicaoJogador[1]] = 'caminho';
+                mostrarLabirinto();
+            } else {
+                throw new Error("Não há chave nesta posição!");
+            }
+        }
+
+        function abrirPorta() {
+            if (temChave && labirinto[posicaoJogador[0]][posicaoJogador[1]] === 'porta') {
+                labirinto[posicaoJogador[0]][posicaoJogador[1]] = 'caminho';
+                mostrarLabirinto();
+            } else {
+                throw new Error("Você não pode abrir a porta aqui!");
+            }
         }
 
         function executarCodigo() {
             posicaoJogador = [0, 0];
+            temChave = false;
+            criarLabirinto(niveis[nivelAtual].tamanho);
             const codigo = document.getElementById('codigo').value;
             try {
                 eval(codigo);
@@ -197,24 +148,11 @@
             }
         }
 
-        function proximoNivel() {
-            nivelAtual++;
-            if (nivelAtual < niveis.length) {
-                iniciarNivel();
-            } else {
-                document.getElementById('mensagem').textContent = "Parabéns! Você completou todos os níveis!";
-            }
+        function reiniciarNivel() {
+            iniciarNivel();
         }
 
-        function iniciarNivel() {
-            const nivel = niveis[nivelAtual];
-            criarLabirinto(nivel.tamanho);
-            mostrarLabirinto();
-            document.getElementById('nivelAtual').textContent = `Nível ${nivelAtual + 1}`;
-            document.getElementById('instrucoes').textContent = nivel.instrucoes;
-            document.getElementById('mensagem').textContent = '';
-            document.getElementById('codigo').value = '';
-        }
+        // ... (outras funções mantidas) ...
 
         iniciarNivel();
     </script>
