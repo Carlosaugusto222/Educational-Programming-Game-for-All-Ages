@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aprendizagem de Lógica de Programação</title>
+    <title>Labirinto de Programação - Versão Completa</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,7 +20,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            max-width: 90vw;
+            max-width: 95vw;
         }
         .game-board {
             margin-right: 20px;
@@ -36,12 +36,11 @@
             margin: 1px;
             border: 1px solid #ddd;
         }
-        .parede { background-color: #333; }
         .caminho { background-color: #fff; }
         .jogador { background-color: #f00; }
         .objetivo { background-color: #0f0; }
-        .obstáculo { background-color: #ff9900; }
-        .chave { background-color: #ffff00; }
+        .obstáculo { background-color: #000; }
+        .chave { background-color: #ff0; }
         .porta { background-color: #8b4513; }
         .code-editor {
             width: 300px;
@@ -54,55 +53,217 @@
         .botao {
             margin: 5px;
             padding: 5px 10px;
-            color: #fff;
-            background-color: #0f0;
+            background-color: #4CAF50;
+            color: white;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
         }
-        #mensagem, #nivelAtual {
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        #instrucoes {
+        #instrucoes, #nivelAtual, #mensagem {
             margin-top: 10px;
             font-style: italic;
-        }
-        @media (max-width: 768px) {
-            .game-container {
-                flex-direction: column;
-                align-items: center;
-            }
-            .game-board {
-                margin-right: 0;
-                margin-bottom: 20px;
-            }
-            .code-editor {
-                width: 100%;
-            }
         }
     </style>
 </head>
 <body>
     <div class="game-container">
         <div class="game-board">
-            <h2>Labirinto de Programação</h2>
+            <h1>Labirinto de Programação</h1>
             <div id="labirinto"></div>
             <div id="nivelAtual"></div>
-            <div id="mensagem"></div>
             <div id="instrucoes"></div>
+            <div id="mensagem"></div>
         </div>
         <div class="code-editor">
-            <h2>Seu Código!</h2>
+            <h2>Seu Código</h2>
             <textarea id="codigo" placeholder="Digite seu código aqui..."></textarea>
-            <button onclick="executarCodigo()" class="botao">Run</button>
-            <button onclick="proximoNivel()" class="botao">Next Level</button>
-            <button onclick="reiniciarNivel()" class="botao">Restart Level</button>
+            <br>
+            <button onclick="executarCodigo()" class="botao">Executar Código</button>
+            <button onclick="proximoNivel()" class="botao">Próximo Nível</button>
+            <button onclick="reiniciarNivel()" class="botao">Reiniciar Nível</button>
         </div>
     </div>
-    <h3>Desenvolvido por Carlos Augusto</h1>
 
     <script>
+        let nivelAtual = 0;
+        let posicaoJogador = [0, 0];
+        let objetivo = [0, 0];
+        let labirinto = [];
+        let temChave = false;
+
+        const niveis = [
+            {
+                tamanho: 3,
+                instrucoes: "Use 'moverDireita()' para chegar ao objetivo.",
+                obstáculos: []
+            },
+            {
+                tamanho: 4,
+                instrucoes: "Use 'moverDireita()' e 'moverBaixo()' para chegar ao objetivo.",
+                obstáculos: [[1, 2]]
+            },
+            {
+                tamanho: 5,
+                instrucoes: "Use um loop 'for' para repetir movimentos. Exemplo: for(let i=0; i<3; i++) { moverDireita(); }",
+                obstáculos: [[1, 1], [2, 3], [3, 2]]
+            },
+            {
+                tamanho: 6,
+                instrucoes: "Use 'if(temObstáculoAFrente())' para verificar obstáculos. Use 'girarDireita()' e 'girarEsquerda()' para mudar a direção.",
+                obstáculos: [[1, 1], [1, 2], [1, 3], [1, 4], [3, 1], [3, 2], [3, 3], [3, 4]]
+            },
+            {
+                tamanho: 7,
+                instrucoes: "Colete a chave (amarelo) antes de abrir a porta (marrom). Use 'pegarChave()' sobre a chave.",
+                obstáculos: [[2, 2], [3, 2], [4, 2]],
+                chave: [1, 1],
+                porta: [5, 3]
+            }
+        ];
+
+        let direcaoJogador = 0; // 0: direita, 1: baixo, 2: esquerda, 3: cima
+
+        function criarLabirinto() {
+            const nivel = niveis[nivelAtual];
+            labirinto = [];
+            for (let i = 0; i < nivel.tamanho; i++) {
+                labirinto[i] = [];
+                for (let j = 0; j < nivel.tamanho; j++) {
+                    labirinto[i][j] = 'caminho';
+                }
+            }
+            posicaoJogador = [0, 0];
+            objetivo = [nivel.tamanho - 1, nivel.tamanho - 1];
+            direcaoJogador = 0;
+            temChave = false;
+            for (let obs of nivel.obstáculos) {
+                labirinto[obs[0]][obs[1]] = 'obstáculo';
+            }
+            if (nivel.chave) {
+                labirinto[nivel.chave[0]][nivel.chave[1]] = 'chave';
+            }
+            if (nivel.porta) {
+                labirinto[nivel.porta[0]][nivel.porta[1]] = 'porta';
+            }
+        }
+
+        function mostrarLabirinto() {
+            const labirintoDiv = document.getElementById('labirinto');
+            labirintoDiv.innerHTML = '';
+            for (let i = 0; i < labirinto.length; i++) {
+                for (let j = 0; j < labirinto[i].length; j++) {
+                    const celula = document.createElement('div');
+                    celula.classList.add('celula');
+                    if (i === posicaoJogador[0] && j === posicaoJogador[1]) {
+                        celula.classList.add('jogador');
+                        celula.textContent = ['→', '↓', '←', '↑'][direcaoJogador];
+                    } else if (i === objetivo[0] && j === objetivo[1]) {
+                        celula.classList.add('objetivo');
+                    } else {
+                        celula.classList.add(labirinto[i][j]);
+                    }
+                    labirintoDiv.appendChild(celula);
+                }
+                labirintoDiv.appendChild(document.createElement('br'));
+            }
+        }
+
+        function mover() {
+            const direcoes = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+            const [dx, dy] = direcoes[direcaoJogador];
+            const novaX = posicaoJogador[0] + dx;
+            const novaY = posicaoJogador[1] + dy;
+            
+            if (novaX >= 0 && novaX < labirinto.length && novaY >= 0 && novaY < labirinto[0].length) {
+                if (labirinto[novaX][novaY] !== 'obstáculo') {
+                    if (labirinto[novaX][novaY] === 'porta' && !temChave) {
+                        throw new Error("Você precisa da chave para abrir a porta!");
+                    }
+                    posicaoJogador = [novaX, novaY];
+                    if (labirinto[novaX][novaY] === 'porta') {
+                        labirinto[novaX][novaY] = 'caminho';
+                    }
+                    mostrarLabirinto();
+                }
+            }
+        }
+
+        function girarDireita() {
+            direcaoJogador = (direcaoJogador + 1) % 4;
+            mostrarLabirinto();
+        }
+
+        function girarEsquerda() {
+            direcaoJogador = (direcaoJogador + 3) % 4;
+            mostrarLabirinto();
+        }
+
+        function temObstáculoAFrente() {
+            const direcoes = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+            const [dx, dy] = direcoes[direcaoJogador];
+            const novaX = posicaoJogador[0] + dx;
+            const novaY = posicaoJogador[1] + dy;
+            
+            return novaX < 0 || novaX >= labirinto.length || novaY < 0 || novaY >= labirinto[0].length ||
+                   labirinto[novaX][novaY] === 'obstáculo' ||
+                   (labirinto[novaX][novaY] === 'porta' && !temChave);
+        }
+
+        function pegarChave() {
+            if (labirinto[posicaoJogador[0]][posicaoJogador[1]] === 'chave') {
+                temChave = true;
+                labirinto[posicaoJogador[0]][posicaoJogador[1]] = 'caminho';
+                mostrarLabirinto();
+            } else {
+                throw new Error("Não há chave nesta posição!");
+            }
+        }
+
+        function verificarVitoria() {
+            return posicaoJogador[0] === objetivo[0] && posicaoJogador[1] === objetivo[1];
+        }
+
+        function executarCodigo() {
+            criarLabirinto();
+            mostrarLabirinto();
+            const codigo = document.getElementById('codigo').value;
+            try {
+                eval(codigo);
+                if (verificarVitoria()) {
+                    document.getElementById('mensagem').textContent = "Parabéns! Você chegou ao objetivo!";
+                } else {
+                    document.getElementById('mensagem').textContent = "Tente novamente. Você não chegou ao objetivo.";
+                }
+            } catch (error) {
+                document.getElementById('mensagem').textContent = "Erro no código: " + error.message;
+            }
+        }
+
+        function proximoNivel() {
+            nivelAtual++;
+            if (nivelAtual < niveis.length) {
+                iniciarNivel();
+            } else {
+                document.getElementById('mensagem').textContent = "Parabéns! Você completou todos os níveis!";
+            }
+        }
+
+        function reiniciarNivel() {
+            iniciarNivel();
+        }
+
+        function iniciarNivel() {
+            criarLabirinto();
+            mostrarLabirinto();
+            document.getElementById('nivelAtual').textContent = `Nível ${nivelAtual + 1}`;
+            document.getElementById('instrucoes').textContent = niveis[nivelAtual].instrucoes;
+            document.getElementById('mensagem').textContent = '';
+            document.getElementById('codigo').value = '';
+        }
+
+        // Iniciar o jogo
+        window.onload = function() {
+            iniciarNivel();
+        };
     </script>
 </body>
 </html>
